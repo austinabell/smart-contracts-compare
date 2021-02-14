@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryMsg",
+  "description": "Queries defined for state.",
+  "anyOf": [
+    {
+      "description": "Queries route and returns content.",
+      "type": "object",
+      "required": [
+        "get_route"
+      ],
+      "properties": {
+        "get_route": {
+          "type": "object",
+          "required": [
+            "route"
+          ],
+          "properties": {
+            "route": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

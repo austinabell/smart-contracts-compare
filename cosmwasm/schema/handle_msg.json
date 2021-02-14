@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HandleMsg",
+  "description": "Message for performing a state transition.",
+  "anyOf": [
+    {
+      "description": "User sends token to purchase a route.",
+      "type": "object",
+      "required": [
+        "purchase"
+      ],
+      "properties": {
+        "purchase": {
+          "type": "object",
+          "required": [
+            "content",
+            "route"
+          ],
+          "properties": {
+            "content": {
+              "type": "string"
+            },
+            "route": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "Allows contract owner to withdraw funds.",
+      "type": "object",
+      "required": [
+        "withdraw"
+      ],
+      "properties": {
+        "withdraw": {
+          "type": "object"
+        }
+      }
+    }
+  ]
+}
