@@ -1,3 +1,5 @@
+use crate::state::ContentRecord;
+use cosmwasm_std::Coin;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -27,4 +29,14 @@ pub enum QueryMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ContentResponse {
     pub content: String,
+    pub price: Coin,
+}
+
+impl From<ContentRecord> for ContentResponse {
+    fn from(record: ContentRecord) -> Self {
+        Self {
+            content: record.content,
+            price: record.price,
+        }
+    }
 }

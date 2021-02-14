@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{CanonicalAddr, Storage};
+use cosmwasm_std::{CanonicalAddr, Coin, HumanAddr, Storage};
 use cosmwasm_storage::{
     bucket, bucket_read, singleton, singleton_read, Bucket, ReadonlyBucket, ReadonlySingleton,
     Singleton,
@@ -27,7 +27,9 @@ pub(crate) fn config_read(storage: &dyn Storage) -> ReadonlySingleton<Config> {
 /// Stores single record.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ContentRecord {
+    pub price: Coin,
     pub content: String,
+    pub owner: HumanAddr,
 }
 
 pub(crate) fn resolver(storage: &mut dyn Storage) -> Bucket<ContentRecord> {
