@@ -1,3 +1,21 @@
+# CosmWasm plutocratic hosting
+
+## Compile
+
+```bash
+docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/rust-optimizer:0.10.7
+
+```
+
+## Run node
+
+First, install [wasmd](https://github.com/cosmwasm/wasmd) which is a fork of Gaia, to allow deploying CosmWasm smart contracts to.
+
+## GENERATED DOCS:
+
 # CosmWasm Starter Pack
 
 This is a template to build smart contracts in Rust to run inside a
