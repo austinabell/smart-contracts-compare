@@ -24,7 +24,7 @@
     "jest-environment-node": "~26.0.1",
     "near-cli": "^1.0.1",
     "nodemon": "~2.0.4",
-    "parcel-bundler": "~1.12.4"
+    "parcel-bundler": "1.12.3"
   },
   "jest": {
     "testEnvironment": "near-cli/test_environment"
