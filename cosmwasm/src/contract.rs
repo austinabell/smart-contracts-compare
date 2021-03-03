@@ -239,5 +239,10 @@ mod tests {
                 }
             }
         );
+
+        let info = mock_info("creator", &[]);
+        let msg = HandleMsg::Withdraw {};
+        let res = handle(deps.as_mut(), mock_env(), info, msg);
+        assert!(res.is_ok());
     }
 }
