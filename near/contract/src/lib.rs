@@ -65,7 +65,12 @@ impl ContentTracker {
     }
 
     /// Allows owner of the contract withdraw funds.
-    pub fn withdraw(&mut self) {}
+    pub fn withdraw(&mut self) {
+        assert_eq!(env::predecessor_account_id(), self.contract_owner);
+
+        // Send the contract funds to the contract owner
+        Promise::new(self.contract_owner.clone()).transfer(env::account_balance());
+    }
 }
 
 #[cfg(test)]
@@ -76,7 +81,7 @@ mod tests {
 
     fn get_context(name: impl ToString, is_view: bool) -> VMContext {
         VMContextBuilder::new()
-            .signer_account_id(name.to_string())
+            .predecessor_account_id(name.to_string())
             .is_view(is_view)
             .build()
     }
@@ -107,6 +112,7 @@ mod tests {
     #[test]
     fn purchase_and_replace() {
         let mut context = get_context("bob", false);
+        println!("name: {}", context.signer_account_id);
         testing_env!(context.clone());
         let mut contract = ContentTracker::default();
 
@@ -119,7 +125,7 @@ mod tests {
         );
 
         // Try purchasing same route with same amount
-        context.signer_account_id = "alice".to_string();
+        context.predecessor_account_id = "alice".to_string();
         context.attached_deposit = 3;
         testing_env!(context.clone());
         contract.purchase("troute".to_string(), "new content".to_string());
@@ -127,5 +133,10 @@ mod tests {
             contract.get_route("troute".to_string()),
             Some("new content".to_string())
         );
+
+        // Contract owner
+        context.predecessor_account_id = "bob".to_string();
+        testing_env!(context.clone());
+        contract.withdraw();
     }
 }
