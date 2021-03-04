@@ -36,6 +36,7 @@ impl ContentTracker {
     pub fn get_route(&self, route: String) -> Option<String> {
         self.values.get(&route).map(|v| v.content)
     }
+
     /// Purchases a route based on funds sent to the contract.
     #[payable]
     pub fn purchase(&mut self, route: String, content: String) {

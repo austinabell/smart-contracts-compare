@@ -10,4 +10,4 @@ Planned:
 - [ ] [ink!](https://github.com/paritytech/ink)
 - [ ] [Solidity](https://soliditylang.org/)
 - [ ] [Solana](https://solana.com/)
-- [ ] [NEAR](https://near.org/)
+- [x] [NEAR](https://near.org/)
