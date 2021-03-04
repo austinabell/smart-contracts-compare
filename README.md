@@ -8,6 +8,6 @@ Planned:
 
 - [x] [CosmWasm](https://www.cosmwasm.com/)
 - [ ] [ink!](https://github.com/paritytech/ink)
-- [ ] [Solidity](https://soliditylang.org/)
+- [x] [Solidity](https://soliditylang.org/)
 - [ ] [Solana](https://solana.com/)
 - [x] [NEAR](https://near.org/)
