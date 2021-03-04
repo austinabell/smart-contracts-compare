@@ -1,101 +1,131 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;
-use near_sdk::{env, near_bindgen};
+use near_sdk::{env, near_bindgen, AccountId, Balance, Promise};
 
 #[global_allocator]
 static ALLOC: near_sdk::wee_alloc::WeeAlloc = near_sdk::wee_alloc::WeeAlloc::INIT;
 
-#[near_bindgen]
-#[derive(Default, BorshDeserialize, BorshSerialize)]
-pub struct Counter {
-    val: i8,
+#[derive(BorshDeserialize, BorshSerialize)]
+pub struct ContentRecord {
+    pub price: Balance,
+    pub content: String,
+    pub owner: AccountId,
 }
 
 #[near_bindgen]
-impl Counter {
-    pub fn get_num(&self) -> i8 {
-        return self.val;
-    }
+#[derive(BorshDeserialize, BorshSerialize)]
+pub struct ContentTracker {
+    values: LookupMap<String, ContentRecord>,
+    contract_owner: AccountId,
+}
 
-    pub fn increment(&mut self) {
-        self.val += 1;
-        let log_message = format!("Increased number to {}", self.val);
-        env::log(log_message.as_bytes());
-        after_counter_change();
-    }
-
-    pub fn decrement(&mut self) {
-        self.val -= 1;
-        let log_message = format!("Decreased number to {}", self.val);
-        env::log(log_message.as_bytes());
-        after_counter_change();
-    }
-
-    pub fn reset(&mut self) {
-        self.val = 0;
-        env::log(b"Reset counter to zero");
+impl Default for ContentTracker {
+    fn default() -> Self {
+        // TODO verify if env is initialized in default call
+        let contract_owner = env::predecessor_account_id();
+        Self {
+            values: LookupMap::new(b"v".to_vec()),
+            contract_owner,
+        }
     }
 }
 
-fn after_counter_change() {
-    env::log("Make sure you don't overflow, my friend.".as_bytes());
+#[near_bindgen]
+impl ContentTracker {
+    /// Gets content at a given route.
+    pub fn get_route(&self, route: String) -> Option<String> {
+        self.values.get(&route).map(|v| v.content)
+    }
+    /// Purchases a route based on funds sent to the contract.
+    #[payable]
+    pub fn purchase(&mut self, route: String, content: String) {
+        let deposit = env::attached_deposit();
+        assert!(deposit > 0);
+        if let Some(entry) = self.values.get(&route) {
+            assert!(
+                deposit > entry.price,
+                "Not enough deposit to purchase route, price: {} deposit: {}",
+                entry.price,
+                deposit
+            );
+
+            // Refund purchase to existing owner
+            Promise::new(entry.owner).transfer(entry.price);
+        }
+
+        // Update record for the contract state.
+        self.values.insert(
+            &route,
+            &ContentRecord {
+                price: deposit,
+                content,
+                owner: env::predecessor_account_id(),
+            },
+        );
+    }
+
+    /// Allows owner of the contract withdraw funds.
+    pub fn withdraw(&mut self) {}
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use near_sdk::MockedBlockchain;
-    use near_sdk::{testing_env, VMContext};
+    use near_sdk::{test_utils::VMContextBuilder, testing_env, VMContext};
 
-    fn get_context(input: Vec<u8>, is_view: bool) -> VMContext {
-        VMContext {
-            current_account_id: "alice.testnet".to_string(),
-            signer_account_id: "robert.testnet".to_string(),
-            signer_account_pk: vec![0, 1, 2],
-            predecessor_account_id: "jane.testnet".to_string(),
-            input,
-            block_index: 0,
-            block_timestamp: 0,
-            account_balance: 0,
-            account_locked_balance: 0,
-            storage_usage: 0,
-            attached_deposit: 0,
-            prepaid_gas: 10u64.pow(18),
-            random_seed: vec![0, 1, 2],
-            is_view,
-            output_data_receivers: vec![],
-            epoch_height: 19,
-        }
+    fn get_context(name: impl ToString, is_view: bool) -> VMContext {
+        VMContextBuilder::new()
+            .signer_account_id(name.to_string())
+            .is_view(is_view)
+            .build()
     }
 
     #[test]
-    fn increment() {
-        let context = get_context(vec![], false);
+    fn basic_initialize() {
+        let context = get_context("bob", false);
         testing_env!(context);
-        let mut contract = Counter { val: 0 };
-        contract.increment();
-        println!("Value after increment: {}", contract.get_num());
-        assert_eq!(1, contract.get_num());
+        let contract = ContentTracker::default();
+        assert!(contract.get_route("test".to_string()).is_none());
     }
 
-    #[test]
-    fn decrement() {
-        let context = get_context(vec![], false);
-        testing_env!(context);
-        let mut contract = Counter { val: 0 };
-        contract.decrement();
-        println!("Value after decrement: {}", contract.get_num());
-        assert_eq!(-1, contract.get_num());
-    }
+    // * this is inconsistently failing tests to a seg fault
+    // #[test]
+    // // #[should_panic]
+    // fn no_deposit_fail() {
+    //     let context = get_context("bob", false);
+    //     testing_env!(context);
+    //     let mut contract = ContentTracker::default();
+
+    //     // Should fail because no deposit attached
+    //     std::panic::catch_unwind(move || {
+    //         contract.purchase("troute".to_string(), "tcontent".to_string());
+    //     })
+    //     .unwrap_err();
+    // }
 
     #[test]
-    fn increment_and_reset() {
-        let context = get_context(vec![], false);
-        testing_env!(context);
-        let mut contract = Counter { val: 0 };
-        contract.increment();
-        contract.reset();
-        println!("Value after reset: {}", contract.get_num());
-        assert_eq!(0, contract.get_num());
+    fn purchase_and_replace() {
+        let mut context = get_context("bob", false);
+        testing_env!(context.clone());
+        let mut contract = ContentTracker::default();
+
+        context.attached_deposit = 2;
+        testing_env!(context.clone());
+        contract.purchase("troute".to_string(), "tcontent".to_string());
+        assert_eq!(
+            contract.get_route("troute".to_string()),
+            Some("tcontent".to_string())
+        );
+
+        // Try purchasing same route with same amount
+        context.signer_account_id = "alice".to_string();
+        context.attached_deposit = 3;
+        testing_env!(context.clone());
+        contract.purchase("troute".to_string(), "new content".to_string());
+        assert_eq!(
+            contract.get_route("troute".to_string()),
+            Some("new content".to_string())
+        );
     }
 }
