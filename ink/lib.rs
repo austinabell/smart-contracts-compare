@@ -109,8 +109,6 @@ mod ink_plutocratic_hosting {
         use super::*;
         use ink_lang as ink;
 
-        const DEFAULT_CALLEE_HASH: [u8; 32] = [0x07; 32];
-        const DEFAULT_ENDOWMENT: Balance = 1_000_000;
         const DEFAULT_GAS_LIMIT: Balance = 1_000_000;
 
         fn default_accounts() -> ink_env::test::DefaultAccounts<ink_env::DefaultEnvironment> {
@@ -118,22 +116,91 @@ mod ink_plutocratic_hosting {
                 .expect("off-chain environment should have been initialized already")
         }
 
-        fn set_next_caller(caller: AccountId) {
+        fn set_next_caller(caller: AccountId, value: Balance) {
             ink_env::test::push_execution_context::<ink_env::DefaultEnvironment>(
                 caller,
-                AccountId::from(DEFAULT_CALLEE_HASH),
-                DEFAULT_ENDOWMENT,
+                contract_id(),
                 DEFAULT_GAS_LIMIT,
+                value,
                 ink_env::test::CallData::new(ink_env::call::Selector::new([0x00; 4])),
             )
+        }
+
+        fn get_balance(account_id: AccountId) -> Balance {
+            ink_env::test::get_account_balance::<ink_env::DefaultEnvironment>(account_id)
+                .expect("Cannot set account balance")
+        }
+
+        fn set_balance(account_id: AccountId, balance: Balance) {
+            ink_env::test::set_account_balance::<ink_env::DefaultEnvironment>(account_id, balance)
+                .expect("Cannot set account balance");
+        }
+
+        fn contract_id() -> AccountId {
+            ink_env::test::get_current_contract_account_id::<ink_env::DefaultEnvironment>()
+                .expect("Cannot get contract id")
         }
 
         #[ink::test]
         fn basic_initialize() {
             let default_accounts = default_accounts();
 
-            set_next_caller(default_accounts.alice);
+            set_next_caller(default_accounts.alice, 0);
             let mut _contract = ContentTracker::new();
+        }
+
+        #[ink::test]
+        fn purchase_and_replace() {
+            let default_accounts = default_accounts();
+
+            set_next_caller(default_accounts.alice, 0);
+            let mut contract = ContentTracker::new();
+
+            assert!(contract.get_route("troute".to_string()).is_none());
+
+            // Sending with 0 value should fail
+            set_next_caller(default_accounts.bob, 0);
+            assert!(matches!(
+                contract.purchase("troute".to_string(), "tcontent".to_string()),
+                Err(Error::InsufficientDeposit)
+            ));
+
+            // Sending with a value should succeed.
+            set_next_caller(default_accounts.bob, 2);
+            contract
+                .purchase("troute".to_string(), "tcontent".to_string())
+                .unwrap();
+            assert_eq!(
+                contract.get_route("troute".to_string()),
+                Some("tcontent".to_string())
+            );
+            // Tests don't actually transfer, so the balance needs to be set manually
+            set_balance(contract_id(), 2);
+
+            // Sending with same value as purchased should error.
+            set_next_caller(default_accounts.charlie, 2);
+            assert!(matches!(
+                contract.purchase("troute".to_string(), "new content".to_string()),
+                Err(Error::InsufficientDeposit)
+            ));
+            assert_eq!(
+                contract.get_route("troute".to_string()),
+                Some("tcontent".to_string())
+            );
+
+            let bob_balance = get_balance(default_accounts.bob);
+
+            // Should be able to repurchase the route from bob with more value.
+            set_next_caller(default_accounts.charlie, 4);
+            contract
+                .purchase("troute".to_string(), "new content".to_string())
+                .unwrap();
+            assert_eq!(
+                contract.get_route("troute".to_string()),
+                Some("new content".to_string())
+            );
+            // Check to make sure bob's balance was refunded what they purchased
+            assert_eq!(get_balance(default_accounts.bob), bob_balance + 2);
         }
     }
 }
