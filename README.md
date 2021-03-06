@@ -7,7 +7,7 @@ This is just arbitrary logic for a contract to compare the different smart contr
 Planned:
 
 - [x] [CosmWasm](https://www.cosmwasm.com/)
-- [ ] [ink!](https://github.com/paritytech/ink)
+- [x] [ink!](https://github.com/paritytech/ink)
 - [x] [Solidity](https://soliditylang.org/)
 - [ ] [Solana](https://solana.com/)
 - [x] [NEAR](https://near.org/)
