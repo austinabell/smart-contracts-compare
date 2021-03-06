@@ -1,24 +1,27 @@
-import { storage, logging } from "near-sdk-as";
+import { storage, logging, env, context } from "near-sdk-as";
+import { values, ContentRecord } from "./model";
 
 // --- contract code goes below
 
+const OWNER_KEY = "owner";
+
+export function init(): void {
+  storage.set<string>(OWNER_KEY, context.predecessor);
+}
+
 export function incrementCounter(value: i32): void {
-  const newCounter = storage.getPrimitive<i32>("counter", 0) + value;
-  storage.set<i32>("counter", newCounter);
-  logging.log("Counter is now: " + newCounter.toString());
+  
 }
 
-export function decrementCounter(value: i32): void {
-  const newCounter = storage.getPrimitive<i32>("counter", 0) - value;
-  storage.set<i32>("counter", newCounter);
-  logging.log("Counter is now: " + newCounter.toString());
+export function purchase(route: string, content: string): void {
+
 }
 
-export function getCounter(): i32 {
-  return storage.getPrimitive<i32>("counter", 0);
+export function getRoute(route: string): string | null {
+  const value = values.get(route);
+  return value ? value.content : null
 }
 
-export function resetCounter(): void {
-  storage.set<i32>("counter", 0);
-  logging.log("Counter is reset!");
+export function withdraw(): void {
+  
 }
