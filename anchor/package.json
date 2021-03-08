@@ -1,0 +1,12 @@
+{
+  "name": "plutocratic-hosting",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@project-serum/anchor": "^0.2.2-beta.2",
+    "@types/chai": "^4.2.15",
+    "@types/mocha": "^8.2.1",
+    "@types/node": "^14.14.32"
+  }
+}
