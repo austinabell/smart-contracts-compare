@@ -8,7 +8,7 @@ pub mod plutocratic_hosting {
     use super::*;
 
     // TODO action control
-    pub fn initialize(ctx: Context<Initialize>, price: u64, content: String) -> ProgramResult {
+    pub fn initialize(ctx: Context<Initialize>, price: u64, content: String, nonce: u8) -> ProgramResult {
         // Transfer funds to the contract vault.
         let cpi_accounts = Transfer {
             from: ctx.accounts.from.to_account_info().clone(),
@@ -23,6 +23,7 @@ pub mod plutocratic_hosting {
         let content_record = &mut ctx.accounts.content;
         content_record.price = price;
         content_record.content = content;
+        content_record.nonce = nonce;
         content_record.owner = *ctx.accounts.from.to_account_info().key;
         content_record.vault = *ctx.accounts.vault.to_account_info().key;
 
@@ -57,4 +58,6 @@ pub struct ContentRecord {
     pub owner: Pubkey,
     /// Address for token program of funds locked in contract.
     pub vault: Pubkey,
+    /// Nonce for the content, to create valid program derived addresses.
+    pub nonce: u8,
 }

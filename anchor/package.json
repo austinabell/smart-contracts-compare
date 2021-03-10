@@ -8,5 +8,9 @@
     "@types/chai": "^4.2.15",
     "@types/mocha": "^8.2.1",
     "@types/node": "^14.14.32"
+  },
+  "dependencies": {
+    "@project-serum/common": "^0.0.1-beta.3",
+    "@project-serum/serum": "^0.13.25"
   }
 }
