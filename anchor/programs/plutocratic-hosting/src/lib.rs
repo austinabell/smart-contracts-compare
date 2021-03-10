@@ -34,14 +34,14 @@ pub mod plutocratic_hosting {
 pub struct Initialize<'info> {
     #[account(init)]
     content: ProgramAccount<'info, ContentRecord>,
-    #[account(mut, "&vault.owner == check_signer.key")]
+    #[account(mut, "&vault.owner == contract_signer.key")]
     vault: CpiAccount<'info, TokenAccount>,
-    // Program derived address for the check.
-    check_signer: AccountInfo<'info>,
-    // Token account the check is made from.
+    /// Program derived address for the contract.
+    contract_signer: AccountInfo<'info>,
+    /// Token account the contract is made from.
     #[account(mut, has_one = owner)]
     from: CpiAccount<'info, TokenAccount>,
-    // Owner of the `from` token account.
+    /// Owner of the `from` token account.
     owner: AccountInfo<'info>,
     token_program: AccountInfo<'info>,
     rent: Sysvar<'info, Rent>,
