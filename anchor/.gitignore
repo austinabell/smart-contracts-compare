@@ -13,3 +13,5 @@ node_modules
 
 # Ignore anchor specific files
 .anchor
+
+Cargo.lock
