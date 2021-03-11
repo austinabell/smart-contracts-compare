@@ -3,15 +3,20 @@ import * as serumCmn from '@project-serum/common';
 import { TokenInstructions } from '@project-serum/serum';
 import * as assert from "assert";
 
+type PublicKey = anchor.web3.PublicKey;
+type Account = anchor.web3.Account;
+
 describe('plutocratic-hosting', () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.Provider.env());
 
   const program = anchor.workspace.PlutocraticHosting;
 
-  let mint = null;
-  let alice = null;
-  let receiver = null;
+  let mint: PublicKey = null;
+  let alice: PublicKey = null;
+  let bobAccount: Account = null;
+  let bob: PublicKey = null;
+  let receiver: PublicKey = null;
 
   it("Sets up initial test state", async () => {
     const [_mint, _alice] = await serumCmn.createMintAndVault(
@@ -26,12 +31,20 @@ describe('plutocratic-hosting', () => {
       mint,
       program.provider.wallet.publicKey
     );
+
+    bobAccount = new anchor.web3.Account();
+    
+    bob = await serumCmn.createTokenAccount(
+      program.provider,
+      mint,
+      bobAccount.publicKey
+    );
   });
 
   const content = new anchor.web3.Account();
   const vault = new anchor.web3.Account();
 
-  let contractSigner = null;
+  let contractSigner: PublicKey = null;
 
   it("Purchase new content", async () => {
     let [_contractSigner, nonce] = await anchor.web3.PublicKey.findProgramAddress(
