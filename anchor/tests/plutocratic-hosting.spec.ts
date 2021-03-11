@@ -33,7 +33,7 @@ describe('plutocratic-hosting', () => {
     );
 
     bobAccount = new anchor.web3.Account();
-    
+
     bob = await serumCmn.createTokenAccount(
       program.provider,
       mint,
