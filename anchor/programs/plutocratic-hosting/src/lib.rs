@@ -30,7 +30,7 @@ pub mod plutocratic_hosting {
         content_record.price = price;
         content_record.content = content;
         content_record.nonce = nonce;
-        content_record.owner = *ctx.accounts.from.to_account_info().key;
+        content_record.owner = *ctx.accounts.owner.to_account_info().key;
         content_record.vault = *ctx.accounts.vault.to_account_info().key;
 
         Ok(())
@@ -39,6 +39,7 @@ pub mod plutocratic_hosting {
     /// Purchase content address for new price, if transferring more tokens.
     #[access_control(check_funds(&ctx.accounts.content, price))]
     pub fn purchase(ctx: Context<Purchase>, price: u64, content: String) -> ProgramResult {
+        // Transfer funds from contract back to owner.
         let seeds = &[
             ctx.accounts.content.to_account_info().key.as_ref(),
             &[ctx.accounts.content.nonce],
@@ -52,6 +53,16 @@ pub mod plutocratic_hosting {
         let cpi_program = ctx.accounts.token_program.clone();
         let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
         token::transfer(cpi_ctx, ctx.accounts.content.price)?;
+
+        // Transfer funds from new owner to contract.
+        let cpi_accounts = Transfer {
+            from: ctx.accounts.new_owner_token.to_account_info().clone(),
+            to: ctx.accounts.vault.to_account_info().clone(),
+            authority: ctx.accounts.new_owner.clone(),
+        };
+        let cpi_program = ctx.accounts.token_program.clone();
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+        token::transfer(cpi_ctx, price)?;
 
         // Overwrite content
         let content_record = &mut ctx.accounts.content;
