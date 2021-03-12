@@ -9,5 +9,5 @@ Planned:
 - [x] [CosmWasm](https://www.cosmwasm.com/)
 - [x] [ink!](https://github.com/paritytech/ink)
 - [x] [Solidity](https://soliditylang.org/)
-- [ ] [Solana](https://solana.com/)
+- [x] [Solana (Anchor)](https://solana.com/)
 - [x] [NEAR](https://near.org/)
