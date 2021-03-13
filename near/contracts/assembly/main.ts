@@ -1,16 +1,12 @@
-import { storage, logging, env, context, ContractPromiseBatch } from "near-sdk-as";
+import { storage, context, ContractPromiseBatch } from "near-sdk-as";
 import { values, ContentRecord } from "./model";
-
-// --- contract code goes below
 
 const OWNER_KEY = "owner";
 
-// TODO should not require calling a function to initialize state, look into lifecycle (no examples)
-export function init(): void {
-  assert(!storage.hasKey(OWNER_KEY));
-  storage.set<string>(OWNER_KEY, context.predecessor);
-}
+// On contract initialization, set the owner key to the caller's address.
+storage.set<string>(OWNER_KEY, context.predecessor);
 
+// Purchase route, if enough value has been provided
 export function purchase(route: string, content: string): void {
   const deposit = context.attachedDeposit;
   assert(!deposit.isZero(), "Deposit required to purchase route");
@@ -25,11 +21,13 @@ export function purchase(route: string, content: string): void {
   values.set(route, rec)
 }
 
+// Return content data from a given route. This does not modify state.
 export function getRoute(route: string): string | null {
   const value = values.get(route);
   return value ? value.content : null
 }
 
+// Withdraw funds from contract, if the caller is the contract owner.
 export function withdraw(): void {
   let owner = storage.get<string>(OWNER_KEY);
   if (owner) {
