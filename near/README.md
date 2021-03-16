@@ -1,7 +1,25 @@
-Counter example in Rust
+NEAR Plutocratic Hosting
 =================================
 
-[![Open in Gitpod!](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/near-examples/rust-counter)
+## Quickstart
+
+Follow the instructions below to setup environment, then run:
+
+```bash
+# Can use https://github.com/near/near-sdk-rs/tree/master/contact-builder for replicatable builds
+# Otherwise, can just run:
+yarn build
+
+# Start app, this bootstraps the frontend server
+# as well as deploying the contract to a devnet
+yarn start
+
+# Runs Rust contract tests and any js tests setup in the directory
+yarn test
+
+# Runs only the contract tests
+yarn test:cargo
+```
 
 <!-- MAGIC COMMENT: DO NOT DELETE! Everything above this line is hidden on NEAR Examples page -->
 

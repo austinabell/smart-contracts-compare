@@ -1,5 +1,18 @@
 # CosmWasm plutocratic hosting
 
+## Quickstart
+
+```bash
+# Cosmwasm code is compiled to wasm
+rustup target add wasm32-unknown-unknown
+
+# Build
+cargo wasm
+
+# Test
+cargo test
+```
+
 ## Compile
 
 ```bash
@@ -7,12 +20,13 @@ docker run --rm -v "$(pwd)":/code \
   --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
   --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
   cosmwasm/rust-optimizer:0.10.7
-
 ```
 
 ## Run node
 
 First, install [wasmd](https://github.com/cosmwasm/wasmd) which is a fork of Gaia, to allow deploying CosmWasm smart contracts to.
+
+<TODO unfinished> 
 
 ## GENERATED DOCS:
 
