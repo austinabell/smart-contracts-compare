@@ -52,7 +52,7 @@ contract ContentTracker {
     }
     
     /**
-     * @dev Store value in variable
+     * @dev Withdraw funds from the contract
      */
     function withdraw() public onlyOwner {
         contractOwner.transfer(address(this).balance);
