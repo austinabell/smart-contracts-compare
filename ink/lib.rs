@@ -10,6 +10,7 @@ mod ink_plutocratic_hosting {
         lazy::Lazy,
         traits::{PackedLayout, SpreadLayout},
     };
+    use ink_prelude::string::String;
 
     /// Emitted whenever a route is purchased
     #[ink(event)]
