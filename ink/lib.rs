@@ -55,7 +55,10 @@ mod ink_plutocratic_hosting {
         /// Creates a new content tracker contract
         #[ink(constructor)]
         pub fn new() -> Self {
-            Default::default()
+            Self {
+                values: Default::default(),
+                contract_owner: Lazy::new(Self::env().caller()),
+            }
         }
 
         /// Gets content at a given route.
