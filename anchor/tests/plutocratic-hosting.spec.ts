@@ -4,7 +4,6 @@ import { TokenInstructions } from '@project-serum/serum';
 import * as assert from 'assert';
 
 type PublicKey = anchor.web3.PublicKey;
-type Account = anchor.web3.Account;
 
 describe('plutocratic-hosting', () => {
   // Configure the client to use the local cluster.
@@ -96,12 +95,6 @@ describe('plutocratic-hosting', () => {
   });
 
   it("Overwrite existing content", async () => {
-    let [_contractSigner, nonce] = await anchor.web3.PublicKey.findProgramAddress(
-      [content.publicKey.toBuffer()],
-      program.programId
-    );
-    contractSigner = _contractSigner;
-
     // Repurchasing same route/program. Using same owner to avoid overhead
     // (It's surprisingly annoying to transfer tokens and manually generate tx)
     await program.rpc.purchase(new anchor.BN(3), "new content", {
